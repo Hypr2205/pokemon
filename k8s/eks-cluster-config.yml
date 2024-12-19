@@ -1,0 +1,37 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: ha-eks
+  region: ap-southeast-1
+  version: "1.31"
+availabilityZones: [ "ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c" ]
+
+iam:
+  withOIDC: true
+
+managedNodeGroups:
+  - name: ng-1
+    amiFamily: "Ubuntu2204"
+    instanceType: t3.medium
+    minSize: 3
+    maxSize: 9
+    desiredCapacity: 3
+    privateNetworking: true
+    availabilityZones: [ "ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c" ]
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        efs: true
+        awsLoadBalancerController: true
+        cloudWatch: true
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/multi-az-cluster: "owned"
+
+cloudWatch:
+  clusterLogging:
+    enableTypes:
+      - "*"
+    logRetentionInDays: 30

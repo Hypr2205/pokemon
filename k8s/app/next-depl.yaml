@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextjs-app
+  namespace: pokemons
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nextjs
+  template:
+    metadata:
+      labels:
+        app: nextjs
+    spec:
+      containers:
+        - name: nextjs
+          image: 381492023411.dkr.ecr.ap-southeast-1.amazonaws.com/pokemons:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              value: "mongodb://root:password@mongodb-0.mongodb.pokemons.svc.cluster.local:27017,mongodb-1.mongodb.pokemons.svc.cluster.local:27017,mongodb-2.mongodb.pokemons.svc.cluster.local:27017/pokemons?replicaSet=rs0"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - nextjs
+                topologyKey: topology.kubernetes.io/zone
